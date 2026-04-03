@@ -4,29 +4,31 @@
   <img src="https://img.shields.io/badge/React-18.x-61dafb?logo=react" alt="React">
   <img src="https://img.shields.io/badge/Vite-5.x-646cff?logo=vite" alt="Vite">
   <img src="https://img.shields.io/badge/TailwindCSS-3.x-38bdf8?logo=tailwindcss" alt="Tailwind">
+  <img src="https://img.shields.io/badge/Electron-31.x-47848f?logo=electron" alt="Electron">
   <img src="https://img.shields.io/badge/License-MIT-green" alt="License">
 </p>
 
-**CodeFlat** is a browser-based tool that flattens your codebase into a single text file, perfect for AI analysis, code reviews, or documentation purposes. It runs entirely in your browser with no server-side processing—your code never leaves your machine.
+**CodeFlat** is a tool that flattens your codebase into a single text file, perfect for AI analysis, code reviews, or documentation purposes. It runs entirely locally — your code never leaves your machine.
 
+Available as a **browser-based web app** or a **cross-platform desktop app** (Windows / macOS / Linux).
+<p align="center">
+  <img src="assets/demo.png" alt="CodeFlat Demo" width="800">
+</p>
 ## ✨ Features
 
-- **🔒 Privacy First** - All processing happens locally in your browser
+- **🔒 Privacy First** - All processing happens locally
 - **🎯 Smart Auto-Filtering** - Automatically excludes common non-essential files (`node_modules`, `__pycache__`, `.git`, etc.)
 - **📁 Interactive File Tree** - Visual selection with expand/collapse functionality
 - **⚡ Batch Processing** - Efficiently handles large codebases
 - **📋 Multiple Export Options** - Copy to clipboard or download as file
 - **🎨 Modern UI** - Clean, responsive dark-themed interface
 - **🔧 Customizable Filters** - Add or remove filter rules as needed
+- **🖥️ Desktop App** - Native folder dialog, Save As, offline — via Electron
 
 ## 📋 Prerequisites
 
-Before installation, ensure you have the following installed:
-
 - **Node.js** (v18.0.0 or higher)
 - **npm** (v9.0.0 or higher) - comes with Node.js
-
-### Verify Installation
 
 ```bash
 node --version   # Should output v18.x.x or higher
@@ -35,103 +37,100 @@ npm --version    # Should output 9.x.x or higher
 
 ---
 
-## 🚀 Deployment
+## 🚀 Web App Deployment
 
 ### Option 1: One-Click Setup (Recommended)
 
-#### Linux / macOS
-
 ```bash
-# Download and run the setup script
 chmod +x setup.sh
 ./setup.sh
-
-# Start the development server
 cd codeflat
 npm run dev
 ```
 
-#### Windows (PowerShell)
-
-```powershell
-# Run the setup script using Git Bash or WSL
-bash setup.sh
-
-# Or manually execute each step (see Option 2)
-```
-
----
+> **Windows**: Run via Git Bash or WSL. See [Platform-Specific Notes](#-platform-specific-notes) below.
 
 ### Option 2: Manual Installation
 
-#### Step 1: Create Vite Project
-
-**Linux / macOS:**
 ```bash
+# 1. Create project
 npm create vite@latest codeflat -- --template react
 cd codeflat
-```
 
-**Windows (Command Prompt):**
-```cmd
-npm create vite@latest codeflat -- --template react
-cd codeflat
-```
-
-**Windows (PowerShell):**
-```powershell
-npm create vite@latest codeflat -- --template react
-Set-Location codeflat
-```
-
-#### Step 2: Install Dependencies
-
-```bash
+# 2. Install dependencies
 npm install
 npm install lucide-react
 npm install -D tailwindcss@3 postcss autoprefixer
 npx tailwindcss init -p
-```
 
-#### Step 3: Configure Tailwind CSS
-
-Replace the contents of `tailwind.config.js`:
-
-```javascript
-/** @type {import('tailwindcss').Config} */
-export default {
-  content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
-  theme: {
-    extend: {},
-  },
-  plugins: [],
-}
-```
-
-#### Step 4: Configure CSS
-
-Replace the contents of `src/index.css`:
-
-```css
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-```
-
-#### Step 5: Add Application Code
-
-Replace `src/App.jsx` with the provided `App.jsx` file.
-
-#### Step 6: Start Development Server
-
-```bash
+# 3. Configure Tailwind (tailwind.config.js)
+# 4. Configure CSS (src/index.css)
+# 5. Replace src/App.jsx with provided App.js
+# 6. Start dev server
 npm run dev
 ```
 
-Open your browser and navigate to `http://localhost:5173`
+Open `http://localhost:5173` in your browser.
+
+---
+
+## 🖥️ Desktop App (Electron)
+
+Convert CodeFlat into a standalone desktop application with native OS integration.
+
+### One-Click Setup
+
+After deploying the web app (via `setup.sh`), run:
+
+```bash
+# In your codeflat project directory
+chmod +x electron-setup.sh
+./electron-setup.sh
+```
+
+The script will ask two questions:
+
+| Question | Options |
+|----------|---------|
+| **Native folder dialog?** | `[1]` Yes (recommended) — system file picker, Save As dialog |
+|  | `[2]` No — keep browser-style `webkitdirectory` picker |
+| **Download mirror?** | `[1]` Default (GitHub) — international networks |
+|  | `[2]` China mirror (npmmirror) — much faster in mainland China |
+
+### What the script does
+
+- Creates `electron/` directory with main process and preload files
+- Auto-detects `"type": "module"` projects and uses `.cjs` extensions
+- Configures Vite for Electron compatibility (`base: './'`)
+- Updates `package.json` with Electron scripts and build config
+- Optionally replaces `App.jsx` with native dialog version (original backed up)
+- Installs Electron dependencies
+
+### Commands after setup
+
+```bash
+# Development mode (hot-reload)
+npm run dev
+
+# Test production build
+npm run build
+npx cross-env NODE_ENV=production electron .
+
+# Package for distribution
+npm run dist:win      # → release/win-unpacked/CodeFlat.exe
+npm run dist:mac      # → release/CodeFlat.dmg
+npm run dist:linux    # → release/CodeFlat.AppImage
+```
+
+### Web vs Desktop comparison
+
+| Feature | Web | Desktop |
+|---------|-----|---------|
+| Folder selection | Browser `webkitdirectory` | Native OS dialog |
+| File reading | File API (in-memory) | Node.js `fs` (streaming) |
+| Save/export | Browser download | Native "Save As" dialog |
+| Distribution | Deploy to URL | `.exe` / `.dmg` / `.AppImage` |
+| Offline use | Needs hosting | Fully offline |
 
 ---
 
@@ -139,25 +138,13 @@ Open your browser and navigate to `http://localhost:5173`
 
 ### Windows
 
-**Using Command Prompt:**
-```cmd
-cd codeflat
-npm run dev
-```
-
-**Using PowerShell:**
-```powershell
-Set-Location codeflat
-npm run dev
-```
-
-**Using Git Bash (Recommended):**
 ```bash
+# Using Git Bash (Recommended)
 cd codeflat
 npm run dev
 ```
 
-> **Note:** If you encounter permission issues, run your terminal as Administrator.
+> If you encounter permission issues, run your terminal as Administrator.
 
 ### macOS
 
@@ -166,10 +153,7 @@ cd codeflat
 npm run dev
 ```
 
-> **Note:** If you get permission errors with npm, you may need to fix npm permissions:
-> ```bash
-> sudo chown -R $(whoami) ~/.npm
-> ```
+> Permission errors? Fix with: `sudo chown -R $(whoami) ~/.npm`
 
 ### Linux (Ubuntu/Debian)
 
@@ -178,7 +162,7 @@ cd codeflat
 npm run dev
 ```
 
-> **Note:** Install Node.js via NodeSource if not available:
+> Install Node.js via NodeSource if needed:
 > ```bash
 > curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
 > sudo apt-get install -y nodejs
@@ -187,45 +171,36 @@ npm run dev
 ### Linux (Fedora/RHEL)
 
 ```bash
+sudo dnf install nodejs npm
 cd codeflat
 npm run dev
 ```
-
-> **Note:** Install Node.js via dnf:
-> ```bash
-> sudo dnf install nodejs npm
-> ```
 
 ---
 
 ## 🏗️ Production Build
 
-To create an optimized production build:
+### Web (static files)
 
 ```bash
 npm run build
+# Serve the dist/ directory with any static server:
+npx serve -s dist
 ```
 
-The output will be in the `dist/` directory. You can serve it with any static file server:
+### Desktop (packaged app)
 
 ```bash
-# Using npm serve
-npm install -g serve
-serve -s dist
-
-# Using Python
-cd dist && python -m http.server 8080
-
-# Using Node.js http-server
-npm install -g http-server
-http-server dist
+npm run dist:win      # Windows
+npm run dist:mac      # macOS
+npm run dist:linux    # Linux
 ```
+
+Output in `./release/` directory. The `win-unpacked/` folder can be zipped and distributed directly.
 
 ---
 
 ## 🐳 Docker Deployment (Optional)
-
-Create a `Dockerfile` in your project root:
 
 ```dockerfile
 FROM node:20-alpine AS build
@@ -241,8 +216,6 @@ EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
 ```
 
-Build and run:
-
 ```bash
 docker build -t codeflat .
 docker run -p 8080:80 codeflat
@@ -252,15 +225,13 @@ docker run -p 8080:80 codeflat
 
 ## 📖 Usage Guide
 
-1. **Select Folder** - Click the "Select Folder" button and choose your project directory
+1. **Select Folder** - Click "Select Folder" and choose your project directory
 2. **Configure Filters** - Click the filter icon to manage auto-exclude rules
 3. **Select Files** - Use checkboxes to include/exclude specific files or folders
 4. **Extract** - Click "Extract" to generate the flattened output
-5. **Export** - Copy to clipboard or download as a text file
+5. **Export** - Copy to clipboard or download/save as a text file
 
 ### Default Filter Rules
-
-The following patterns are excluded by default:
 
 | Pattern | Description |
 |---------|-------------|
@@ -280,11 +251,11 @@ The following patterns are excluded by default:
 ### Custom Filters
 
 - Click the **Filter** button to open the filter panel
-- Add new patterns in the input field (e.g., `*.log`, `temp`, `.myconfig`)
+- Add new patterns (e.g., `*.log`, `temp`, `.myconfig`)
 - Use `*.ext` syntax to match file extensions
-- Click the **×** on any tag to remove a filter
-- Use **Reset** to restore default filters
-- Use **Clear All** to disable all auto-filtering
+- Click **×** on any tag to remove a filter
+- **Reset** restores default filters
+- **Clear All** disables all auto-filtering
 
 ---
 
@@ -293,22 +264,30 @@ The following patterns are excluded by default:
 ### Common Issues
 
 **"npm: command not found"**
-- Ensure Node.js is installed and added to your PATH
+- Ensure Node.js is installed and in your PATH
 - Restart your terminal after installation
 
 **"EACCES: permission denied"**
-- On Linux/macOS: Fix npm permissions or use nvm
-- On Windows: Run terminal as Administrator
+- Linux/macOS: Fix npm permissions or use nvm
+- Windows: Run terminal as Administrator
 
 **Port 5173 already in use**
 ```bash
-# Use a different port
 npm run dev -- --port 3000
 ```
 
-**Folder selection not working**
-- Ensure you're using a modern browser (Chrome, Firefox, Edge)
-- The `webkitdirectory` attribute may not work in all browsers
+**Folder selection not working (web)**
+- Use a modern browser (Chrome, Firefox, Edge)
+- `webkitdirectory` may not work in all browsers
+
+**Electron white screen**
+- Ensure `vite.config.js` has `base: './'`
+- Rebuild: `npm run build`
+- Check DevTools (`Ctrl+Shift+I`) for errors
+
+**Electron `require is not defined` error**
+- Your project has `"type": "module"` in `package.json`
+- Re-run `electron-setup.sh` — it auto-detects this and uses `.cjs` extensions
 
 ---
 
